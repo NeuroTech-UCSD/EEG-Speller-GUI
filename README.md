@@ -1,0 +1,1 @@
+"EEG-Speller is cool!" 
