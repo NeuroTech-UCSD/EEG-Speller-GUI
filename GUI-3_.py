@@ -151,17 +151,23 @@ class StartPage(tk.Frame):
         self.curr_chart = 0 # 0 is first chart, 1 is second chart
         self.curr_character = 0 #index of character string
 
+
+        self.temp_preditions = ["A", "E", "I", "O", "U"]
         # Initialize the chars for each circle
         self.BIG_CIRCLE_CHAR_L1 = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-                                "K", "M", "N", "O", "P", "Q", "R", "S", "T", "U"]
+                                "K", "M", "N", "O", "P", "Q", "R", "S", "T", "U"]  # make predictions
+
         self.MID_CIRCLE_CHAR_L1 = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
                                 "K", "M", "N", "O", "P", "Q", "R", "S", "T", "U"]
+
+
         self.SMALL_CIRCLE_CHAR_L1 = []
         self.BIG_CIRCLE_CHAR_L2 = ["0", "1", "N", "O", "P", "Q", "R", "S", "T", "U",
-                                   "A", "B", "C", "D", "E", "F", "G", "H", "I", "J",]
+                                   "A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]  # make predictions
         self.MID_CIRCLE_CHAR_L2 = ["0", "1", "N", "O", "P", "Q", "R", "S", "T", "U",
                                     "A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
-        self.SMALL_CIRCLE_CHAR_L2 = []
+        self.SMALL_CIRCLE_CHAR_L2 = [] # will be worked on in the future
+
         self.CHAR_OFFSET = 80
 
         # labels = [left circle label, mid, right]
@@ -659,6 +665,10 @@ class StartPage(tk.Frame):
                 self.curr_layer = self.FIRST_LAYER
                 self.time = 0
         else:
+<<<<<<< HEAD
+=======
+            # this is where we choose a character
+>>>>>>> gui3
             if command == self.LEFT_MI:
                 self.curr_layer = self.SECOND_LAYER
                 self.time2 = 0
@@ -670,6 +680,10 @@ class StartPage(tk.Frame):
                     TEXT.append('\n')
                 self.curr_layer = self.SECOND_LAYER
                 self.time2 = 0
+<<<<<<< HEAD
+=======
+                # TODO fetch from text and update self.temp and self.BIG_CIRCLE_CHAR_L1
+>>>>>>> gui3
             else:
                 self.curr_layer = self.THIRD_LAYER
 
