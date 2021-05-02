@@ -1,5 +1,5 @@
 ##############################################################################
-#Notes and Bugs
+# Notes and Bugs
 # 1. There is sort of this lag and idk how to fix it with the highlight going back to the first section
 # 2. Maybe make the first section last a little longer due to reaction time
 ###############################################################################
@@ -19,6 +19,15 @@ import matplotlib.animation as animation
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
 import matplotlib
+
+# Text-generation
+import sys
+import tensorflow as tf
+
+textgen_path = os.path.join(os.getcwd(), "text generation")
+sys.path.append(textgen_path)
+from textgen import get_one_step_model
+
 # Need to set the backend to enable tkinter functionality with matplotlib
 matplotlib.use("TkAgg")
 
@@ -35,12 +44,13 @@ matplotlib.use("TkAgg")
 # Suppress warnings
 warnings.filterwarnings('ignore')
 
-
 # Fonts
 BOLD_FONT = ("Verdana", 12, 'bold')
 
-#Global variable
+# Global variable
 TEXT = []
+
+
 ###############################################################################
 # Classes for frames
 ###############################################################################
@@ -76,6 +86,7 @@ class FrameContainer(tk.Tk):
     def on_closing(self):
         self.destroy()
 
+
 class TextFrameContainer(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
@@ -108,6 +119,7 @@ class TextFrameContainer(tk.Tk):
     def on_closing(self):
         self.destroy()
 
+
 class StartPage(tk.Frame):
 
     def __init__(self, parent, controller, session=None):
@@ -138,35 +150,33 @@ class StartPage(tk.Frame):
         self.HIGHLIGHTED_COLOR = "#87CEEB"  # blue
         self.NUM_CIRCLE_SECTIONS = 4
         self.NUM_ARC_SECTIONS = 3
-
+        self.NUM_CHAR = 5
+        self.SPACE = 'spc'
 
         # Initialize layers
         self.FIRST_LAYER = 0  # first layer = 3 circles
         self.SECOND_LAYER = 1  # second layer = 1 circle + sectors
         self.THIRD_LAYER = 2  # third layer = column char selection
         self.curr_layer = self.FIRST_LAYER
-        self.curr_section = 0 # 0 is top right, 1 is bot right, 2 is bot left, 3 is top left
+        self.curr_section = 0  # 0 is top right, 1 is bot right, 2 is bot left, 3 is top left
         self.curr_arc = 1  # big arc = 0, mid = 1, small = 2
-        self.curr_letter = 0 # 0 is left letter, 1 is mid, 2 is right
-        self.curr_chart = 0 # 0 is first chart, 1 is second chart
-        self.curr_character = 0 #index of character string
+        self.curr_letter = 0  # 0 is left letter, 1 is mid, 2 is right
+        self.curr_chart = 0  # 0 is first chart, 1 is second chart
+        self.curr_character = 0  # index of character string
 
-
-        self.temp_preditions = ["A", "E", "I", "O", "U"]
         # Initialize the chars for each circle
         self.BIG_CIRCLE_CHAR_L1 = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-                                "K", "M", "N", "O", "P", "Q", "R", "S", "T", "U"]  # make predictions
+                                   "K", "M", "N", "O", "P", "Q", "R", "S", "T", "U"]  # make predictions
 
         self.MID_CIRCLE_CHAR_L1 = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-                                "K", "M", "N", "O", "P", "Q", "R", "S", "T", "U"]
-
+                                   "K", "M", "N", "O", "P", "Q", "R", "S", "T", "U"]
 
         self.SMALL_CIRCLE_CHAR_L1 = []
         self.BIG_CIRCLE_CHAR_L2 = ["0", "1", "N", "O", "P", "Q", "R", "S", "T", "U",
                                    "A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]  # make predictions
         self.MID_CIRCLE_CHAR_L2 = ["0", "1", "N", "O", "P", "Q", "R", "S", "T", "U",
-                                    "A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
-        self.SMALL_CIRCLE_CHAR_L2 = [] # will be worked on in the future
+                                   "A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
+        self.SMALL_CIRCLE_CHAR_L2 = []  # will be worked on in the future
 
         self.CHAR_OFFSET = 80
 
@@ -199,13 +209,19 @@ class StartPage(tk.Frame):
 
         # Initialize circle and chars list
         self.CHARS_LIST_L1 = [self.BIG_CIRCLE_CHAR_L1,
-                           self.MID_CIRCLE_CHAR_L1, self.SMALL_CIRCLE_CHAR_L1]
+                              self.MID_CIRCLE_CHAR_L1, self.SMALL_CIRCLE_CHAR_L1]
         self.CHARS_LIST_L2 = [self.BIG_CIRCLE_CHAR_L2,
                               self.MID_CIRCLE_CHAR_L2, self.SMALL_CIRCLE_CHAR_L2]
         self.CHARS_LIST = [self.CHARS_LIST_L1, self.CHARS_LIST_L2]
         self.CIRCLES_LIST = [self.BIG_CIRCLE,
                              self.MID_CIRCLE, self.SMALL_CIRCLE]
         self.RADIUS_LIST = [self.BIG_RADIUS, self.MID_RADIUS, self.SMALL_RADIUS]
+
+        # initialize textgen model
+        self.one_step_model = get_one_step_model()
+        self.states = None
+        self.next_char = []
+        self.next_chars = []
 
         left_button = ttk.Button(
             self, text="Left", command=lambda: self.send_command(self.LEFT_MI))
@@ -239,7 +255,7 @@ class StartPage(tk.Frame):
         y = self.BIG_CIRCLE["y"]
         self.canvas.create_oval(x - self.BIG_RADIUS, y - self.BIG_RADIUS,
                                 x + self.BIG_RADIUS, y + self.BIG_RADIUS, fill=self.DEFAULT_COLOR)
-        #topright
+        # topright
         self.canvas.create_arc(x - self.BIG_RADIUS, y - self.BIG_RADIUS,
                                x + self.BIG_RADIUS, y + self.BIG_RADIUS, start=0, extent=90,
                                fill=self.topright_arc_color)
@@ -249,7 +265,7 @@ class StartPage(tk.Frame):
         self.canvas.create_arc(x - self.SMALL_RADIUS, y - self.SMALL_RADIUS,
                                x + self.SMALL_RADIUS, y + self.SMALL_RADIUS, start=0, extent=90,
                                fill=self.topright_arc_color)
-        #topleft
+        # topleft
         self.canvas.create_arc(x - self.BIG_RADIUS, y - self.BIG_RADIUS,
                                x + self.BIG_RADIUS, y + self.BIG_RADIUS, start=90, extent=90,
                                fill=self.topleft_arc_color)
@@ -259,17 +275,17 @@ class StartPage(tk.Frame):
         self.canvas.create_arc(x - self.SMALL_RADIUS, y - self.SMALL_RADIUS,
                                x + self.SMALL_RADIUS, y + self.SMALL_RADIUS, start=90, extent=90,
                                fill=self.topleft_arc_color)
-        #botleft
+        # botleft
         self.canvas.create_arc(x - self.BIG_RADIUS, y - self.BIG_RADIUS,
                                x + self.BIG_RADIUS, y + self.BIG_RADIUS, start=180, extent=90,
                                fill=self.botleft_arc_color)
         self.canvas.create_arc(x - self.MID_RADIUS, y - self.MID_RADIUS,
                                x + self.MID_RADIUS, y + self.MID_RADIUS, start=180, extent=90,
-                              fill=self.botleft_arc_color)
+                               fill=self.botleft_arc_color)
         self.canvas.create_arc(x - self.SMALL_RADIUS, y - self.SMALL_RADIUS,
                                x + self.SMALL_RADIUS, y + self.SMALL_RADIUS, start=180, extent=90,
-                              fill=self.botleft_arc_color)
-        #botright
+                               fill=self.botleft_arc_color)
+        # botright
         self.canvas.create_arc(x - self.BIG_RADIUS, y - self.BIG_RADIUS,
                                x + self.BIG_RADIUS, y + self.BIG_RADIUS, start=270, extent=90,
                                fill=self.botright_arc_color)
@@ -286,7 +302,8 @@ class StartPage(tk.Frame):
             for j in range(len(self.CHARS_LIST[self.curr_chart][i])):
                 char = self.CHARS_LIST[self.curr_chart][i][j]
                 self.draw_letter(
-                    char, (360 / len(self.CHARS_LIST[self.curr_chart][i])) * j - self.CHAR_OFFSET, self.RADIUS_LIST[i] - 50,
+                    char, (360 / len(self.CHARS_LIST[self.curr_chart][i])) * j - self.CHAR_OFFSET,
+                          self.RADIUS_LIST[i] - 50,
                     self.CIRCLES_LIST[i]["x"], self.CIRCLES_LIST[i]["y"])
         # Draw labels for circles
         self.canvas.create_text(self.CIRCLES_LIST[0]["x"], self.CIRCLES_LIST[0]["y"] - self.BIG_RADIUS -
@@ -303,8 +320,8 @@ class StartPage(tk.Frame):
                                 x + self.MID_RADIUS, y + self.MID_RADIUS, fill=self.DEFAULT_COLOR)
         self.canvas.create_oval(x - self.SMALL_RADIUS, y - self.SMALL_RADIUS,
                                 x + self.SMALL_RADIUS, y + self.SMALL_RADIUS, fill=self.DEFAULT_COLOR)
-        self.canvas.create_line(x-self.BIG_RADIUS, y, x+self.BIG_RADIUS, y)
-        self.canvas.create_line(x, y-self.BIG_RADIUS, x, y+self.BIG_RADIUS)
+        self.canvas.create_line(x - self.BIG_RADIUS, y, x + self.BIG_RADIUS, y)
+        self.canvas.create_line(x, y - self.BIG_RADIUS, x, y + self.BIG_RADIUS)
 
         if self.curr_section == 0:
             # topright
@@ -353,11 +370,12 @@ class StartPage(tk.Frame):
 
         # Draw letters on circles
         for i in range(len(self.CHARS_LIST[self.curr_chart])):
-            # loop over the chars in each cricle
+            # loop over the chars in each circle
             for j in range(len(self.CHARS_LIST[self.curr_chart][i])):
                 char = self.CHARS_LIST[self.curr_chart][i][j]
                 self.draw_letter(
-                    char, (360 / len(self.CHARS_LIST[self.curr_chart][i])) * j - self.CHAR_OFFSET, self.RADIUS_LIST[i] - 50,
+                    char, (360 / len(self.CHARS_LIST[self.curr_chart][i])) * j - self.CHAR_OFFSET,
+                          self.RADIUS_LIST[i] - 50,
                     self.CIRCLES_LIST[i]["x"], self.CIRCLES_LIST[i]["y"])
         # Draw labels for circles
         self.canvas.create_text(self.CIRCLES_LIST[0]["x"], self.CIRCLES_LIST[0]["y"] - self.BIG_RADIUS -
@@ -569,7 +587,7 @@ class StartPage(tk.Frame):
                     current_color_letter = self.fifth_letter_color
 
             self.canvas.create_text(x_position, y_position, text=chosen_char_list[k],
-                                font=("Verdana", 25), fill=current_color_letter)
+                                    font=("Verdana", 25), fill=current_color_letter)
         # Draw labels for circles
         self.canvas.create_text(self.CIRCLES_LIST[0]["x"], self.CIRCLES_LIST[0]["y"] - self.BIG_RADIUS -
                                 self.LABEL_OFFSET, text=self.LABELS[2], fill="black", font=("Verdana", 32))
@@ -579,7 +597,22 @@ class StartPage(tk.Frame):
         y = math.sin(math.radians(angle)) * radius + center_y
         self.canvas.create_text(x, y, text=character,
                                 fill="black", font=("Verdana", 25))
- # Update loop
+
+    # update the quadrants based on predictions of textgen
+    def update_quadrant_textgen(self):
+        # arr: quadrant arr to be change
+        if self.curr_chart == 0:
+            self.BIG_CIRCLE_CHAR_L1[
+            self.curr_section * self.NUM_CHAR: (self.curr_section + 1) * self.NUM_CHAR] = self.next_chars
+            # if self.curr_section == 0:
+            #     self.BIG_CIRCLE_CHAR_L1[0:self.NUM_CHAR] = self.next_chars
+            # elif self.curr_section == 1:
+            #     self.BIG_CIRCLE_CHAR_L1[self.NUM_CHAR:]
+        elif self.curr_chart == 1:
+            self.BIG_CIRCLE_CHAR_L2[
+            self.curr_section * self.NUM_CHAR: (self.curr_section + 1) * self.NUM_CHAR] = self.next_chars
+
+    # Update loop
     def update(self):
         if self.controller.current_frame == self and self.curr_layer == self.FIRST_LAYER:
             self.time += 50
@@ -660,7 +693,7 @@ class StartPage(tk.Frame):
                 elif self.curr_chart == 1:
                     self.curr_chart = 0
                 self.curr_layer = self.FIRST_LAYER
-                self.time=0
+                self.time = 0
             else:
                 self.curr_layer = self.FIRST_LAYER
                 self.time = 0
@@ -670,16 +703,27 @@ class StartPage(tk.Frame):
                 self.curr_layer = self.SECOND_LAYER
                 self.time2 = 0
             elif command == self.RIGHT_MI:
-                #save characters
-                TEXT.append(self.CHARS_LIST[self.curr_chart][self.curr_arc]
-                            [(self.curr_section+1)*5-self.curr_letter-1])
+                # save characters
+                text_to_append = self.CHARS_LIST[self.curr_chart][self.curr_arc][
+                    (self.curr_section + 1) * 5 - self.curr_letter - 1]
+                text_to_append = text_to_append.replace(self.SPACE, ' ')
+                TEXT.append(text_to_append)
                 if len(TEXT) % 10 == 0:
                     TEXT.append('\n')
                 self.curr_layer = self.SECOND_LAYER
                 self.time2 = 0
                 # TODO fetch from text and update self.temp and self.BIG_CIRCLE_CHAR_L1
+                print()
+                self.next_char = [TEXT[-1]]
+                print("char selected:", self.next_char)
+                self.next_chars, self.states = self.one_step_model.generate_one_step(self.next_char, states=self.states)
+                self.next_chars = [x.decode('utf-8') for x in self.next_chars.numpy()]
+                self.next_chars = [s.replace(' ', self.SPACE) for s in self.next_chars]
+                print("predicted chars:", self.next_chars)
+                self.update_quadrant_textgen()
             else:
                 self.curr_layer = self.THIRD_LAYER
+
 
 class TextPage(tk.Frame):
 
@@ -695,9 +739,9 @@ class TextPage(tk.Frame):
         self.canvas = tk.Canvas(self)
         self.canvas.pack(fill=tk.BOTH, expand=1)
 
-     #get text
+    # get text
     def draw_text(self):
-        self.canvas.create_text(200,400, text=TEXT, fill="black", font=("Verdana", 32))
+        self.canvas.create_text(200, 400, text=TEXT, fill="black", font=("Verdana", 32))
 
     def show(self):
         # Begin the update loop
@@ -708,6 +752,7 @@ class TextPage(tk.Frame):
         self.canvas.delete('all')
         self.draw_text()
         self.canvas.after(100, self.render)
+
 
 ###############################################################################
 # Main
