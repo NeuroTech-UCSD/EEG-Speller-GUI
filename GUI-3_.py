@@ -665,10 +665,7 @@ class StartPage(tk.Frame):
                 self.curr_layer = self.FIRST_LAYER
                 self.time = 0
         else:
-<<<<<<< HEAD
-=======
             # this is where we choose a character
->>>>>>> gui3
             if command == self.LEFT_MI:
                 self.curr_layer = self.SECOND_LAYER
                 self.time2 = 0
@@ -680,10 +677,7 @@ class StartPage(tk.Frame):
                     TEXT.append('\n')
                 self.curr_layer = self.SECOND_LAYER
                 self.time2 = 0
-<<<<<<< HEAD
-=======
                 # TODO fetch from text and update self.temp and self.BIG_CIRCLE_CHAR_L1
->>>>>>> gui3
             else:
                 self.curr_layer = self.THIRD_LAYER
 
