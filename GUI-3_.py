@@ -706,8 +706,12 @@ class StartPage(tk.Frame):
                 # save characters
                 text_to_append = self.CHARS_LIST[self.curr_chart][self.curr_arc][
                     (self.curr_section + 1) * 5 - self.curr_letter - 1]
-                text_to_append = text_to_append.replace(self.SPACE, ' ')
+                # TODO : FIX THIS FROM MAKING TUPLE + second idea
+                # if text_to_append == self.SPACE:
+                #   text_to_append = ' '
+                text_to_append = text_to_append.replace(self.SPACE, '_')
                 TEXT.append(text_to_append)
+                # TODO :
                 if len(TEXT) % 10 == 0:
                     TEXT.append('\n')
                 self.curr_layer = self.SECOND_LAYER
