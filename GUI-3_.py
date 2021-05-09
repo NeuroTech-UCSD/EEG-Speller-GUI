@@ -706,14 +706,23 @@ class StartPage(tk.Frame):
                 # save characters
                 text_to_append = self.CHARS_LIST[self.curr_chart][self.curr_arc][
                     (self.curr_section + 1) * 5 - self.curr_letter - 1]
-                # TODO : FIX THIS FROM MAKING TUPLE + second idea
-                # if text_to_append == self.SPACE:
-                #   text_to_append = ' '
+                # TODO : FIX THIS FROM MAKING TUPLE
                 text_to_append = text_to_append.replace(self.SPACE, '_')
                 TEXT.append(text_to_append)
-                # TODO :
+                # roughly every 15 characters, add a line break at the last space
+                # TODO: get rid of the brackets
                 if len(TEXT) % 10 == 0:
-                    TEXT.append('\n')
+                    # iterate backwards to find last space
+                    i = len(TEXT) - 1
+                    while i >= 0:
+                        if TEXT[i] == '_':
+                            TEXT[i] = '\n'
+                            break
+                        if TEXT[i] == '\n' or i == 0:
+                            TEXT.append('\n')
+                            break
+                        i = i - 1
+
                 self.curr_layer = self.SECOND_LAYER
                 self.time2 = 0
                 # TODO fetch from text and update self.temp and self.BIG_CIRCLE_CHAR_L1
