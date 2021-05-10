@@ -165,23 +165,23 @@ class StartPage(tk.Frame):
         self.curr_character = 0  # index of character string
 
         # Initialize the chars for each circle
-        self.BIG_CIRCLE_CHAR_L1 = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-                                   "K", "M", "N", "O", "P", "Q", "R", "S", "T", "U"]  # make predictions
+        self.BIG_CIRCLE_CHAR_L1 = [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ",
+                                   " ", " ", " ", " ", " ", " ", " ", " ", " ", " "]  # make predictions
 
         self.MID_CIRCLE_CHAR_L1 = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
                                    "K", "M", "N", "O", "P", "Q", "R", "S", "T", "U"]
+        self.SMALL_CIRCLE_CHAR_L1 = ["det"]
 
-        self.SMALL_CIRCLE_CHAR_L1 = []
-        self.BIG_CIRCLE_CHAR_L2 = ["0", "1", "N", "O", "P", "Q", "R", "S", "T", "U",
-                                   "A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]  # make predictions
+        self.BIG_CIRCLE_CHAR_L2 = [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ",
+                                   " ", " ", " ", " ", " ", " ", " ", " ", " ", " "]  # make predictions
         self.MID_CIRCLE_CHAR_L2 = ["0", "1", "N", "O", "P", "Q", "R", "S", "T", "U",
                                    "A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
-        self.SMALL_CIRCLE_CHAR_L2 = []  # will be worked on in the future
+        self.SMALL_CIRCLE_CHAR_L2 = ["det"]  # will be worked on in the future
 
         self.CHAR_OFFSET = 80
 
         # labels = [left circle label, mid, right]
-        self.LABELS = ["choose quarter", "choose section", "choose words"]
+        self.LABELS = ["Circle 1", "Circle 2", "choose section", "choose words"]
         self.LABEL_OFFSET = 50
 
         # Initialize coordinates of circles
@@ -307,7 +307,7 @@ class StartPage(tk.Frame):
                     self.CIRCLES_LIST[i]["x"], self.CIRCLES_LIST[i]["y"])
         # Draw labels for circles
         self.canvas.create_text(self.CIRCLES_LIST[0]["x"], self.CIRCLES_LIST[0]["y"] - self.BIG_RADIUS -
-                                self.LABEL_OFFSET, text=self.LABELS[1], fill="black", font=("Verdana", 32))
+                                self.LABEL_OFFSET, text=self.LABELS[self.curr_chart], fill="black", font=("Verdana", 32))
 
     def draw_second_layer(self):
         x = self.BIG_CIRCLE["x"]
@@ -379,7 +379,7 @@ class StartPage(tk.Frame):
                     self.CIRCLES_LIST[i]["x"], self.CIRCLES_LIST[i]["y"])
         # Draw labels for circles
         self.canvas.create_text(self.CIRCLES_LIST[0]["x"], self.CIRCLES_LIST[0]["y"] - self.BIG_RADIUS -
-                                self.LABEL_OFFSET, text=self.LABELS[1], fill="black", font=("Verdana", 32))
+                                self.LABEL_OFFSET, text=self.LABELS[2], fill="black", font=("Verdana", 32))
 
     def draw_third_layer(self):
         x = self.BIG_CIRCLE["x"]
@@ -590,7 +590,7 @@ class StartPage(tk.Frame):
                                     font=("Verdana", 25), fill=current_color_letter)
         # Draw labels for circles
         self.canvas.create_text(self.CIRCLES_LIST[0]["x"], self.CIRCLES_LIST[0]["y"] - self.BIG_RADIUS -
-                                self.LABEL_OFFSET, text=self.LABELS[2], fill="black", font=("Verdana", 32))
+                                self.LABEL_OFFSET, text=self.LABELS[3], fill="black", font=("Verdana", 32))
 
     def draw_letter(self, character, angle, radius, center_x, center_y):
         x = math.cos(math.radians(angle)) * radius + center_x
@@ -675,8 +675,18 @@ class StartPage(tk.Frame):
         if self.curr_layer == self.SECOND_LAYER:
             # Update the current circle
             if command == self.RIGHT_MI:
-                self.curr_layer = self.THIRD_LAYER
-                self.time = 0
+                # delete the last character
+                print("current arc: " + str(self.curr_arc))
+                if self.curr_arc == 2:
+                    del TEXT[-1]
+                    # go back to previous line
+                    if len(TEXT) % 11 == 0:
+                        Text.pop(self, -1)
+                    self.curr_layer = self.SECOND_LAYER
+                    self.time2 = 0
+                else:
+                    self.curr_layer = self.THIRD_LAYER
+                    self.time = 0
             elif command == self.LEFT_MI:
                 self.curr_layer = self.FIRST_LAYER
                 self.time2 = 0
@@ -703,15 +713,19 @@ class StartPage(tk.Frame):
                 self.curr_layer = self.SECOND_LAYER
                 self.time2 = 0
             elif command == self.RIGHT_MI:
-                # save characters
-                text_to_append = self.CHARS_LIST[self.curr_chart][self.curr_arc][
+                #add character
+                if self.curr_arc == 2:
+                    self.curr_layer = self.SECOND_LAYER
+                    self.time2 = 0
+                else:
+                    text_to_append = self.CHARS_LIST[self.curr_chart][self.curr_arc][
                     (self.curr_section + 1) * 5 - self.curr_letter - 1]
-                text_to_append = text_to_append.replace(self.SPACE, ' ')
-                TEXT.append(text_to_append)
-                if len(TEXT) % 10 == 0:
-                    TEXT.append('\n')
-                self.curr_layer = self.SECOND_LAYER
-                self.time2 = 0
+                    text_to_append = text_to_append.replace(self.SPACE, ' ')
+                    TEXT.append(text_to_append)
+                    if len(TEXT) % 10 == 0:
+                        TEXT.append('\n')
+                    self.curr_layer = self.THIRD_LAYER
+                    self.time = 0
                 # TODO fetch from text and update self.temp and self.BIG_CIRCLE_CHAR_L1
                 print()
                 self.next_char = [TEXT[-1]]
