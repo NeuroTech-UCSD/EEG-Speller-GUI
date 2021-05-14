@@ -653,15 +653,15 @@ class StartPage(tk.Frame):
             timeInterval2 = int(cycleTime2 / 5)
             self.time2 = self.time2 % cycleTime2
             if self.time2 >= 0 and self.time2 < timeInterval2:
-                self.curr_letter = 0
+                self.curr_letter = 4
             elif self.time2 >= timeInterval2 and self.time2 < timeInterval2 * 2:
-                self.curr_letter = 1
+                self.curr_letter = 3
             elif self.time2 >= timeInterval2 * 2 and self.time2 < timeInterval2 * 3:
                 self.curr_letter = 2
             elif self.time2 >= timeInterval2 * 3 and self.time2 < timeInterval2 * 4:
-                self.curr_letter = 3
+                self.curr_letter = 1
             else:
-                self.curr_letter = 4
+                self.curr_letter = 0
 
             self.first_letter_color = self.HIGHLIGHTED_COLOR if self.curr_letter == 0 else self.DEFAULT_TEXT_COLOR
             self.second_letter_color = self.HIGHLIGHTED_COLOR if self.curr_letter == 1 else self.DEFAULT_TEXT_COLOR
@@ -719,7 +719,7 @@ class StartPage(tk.Frame):
                             TEXT[i] = '\n'
                             break
                         if TEXT[i] == '\n' or i == 0:
-                            TEXT.append('\n')
+                            TEXT.insert(TEXT[-1], '\n')
                             break
                         i = i - 1
 
@@ -754,7 +754,9 @@ class TextPage(tk.Frame):
 
     # get text
     def draw_text(self):
-        self.canvas.create_text(200, 400, text=TEXT, fill="black", font=("Verdana", 32))
+
+        strText = ''.join(TEXT)
+        self.canvas.create_text(200, 400, text=strText, fill="black", font=("Verdana", 32))
 
     def show(self):
         # Begin the update loop
