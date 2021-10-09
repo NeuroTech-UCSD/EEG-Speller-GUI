@@ -1,8 +1,6 @@
 # EEG-Speller
 EEG speller help people that cannot use keyboard to type words using EEG headsets.
 
-## Github Directories
-
 ## MOTOR IMAGERY GUI
 GUI consists of two circles that have three layers (tubes) and sliced in a quarter (wedge). The middle tube have 5 letters in each wedge, 20 letters in the circle. The outer tube also consists of 5 letters in each wedge. It will be initialized blank for prediction letters. When a letter is selected, 5 following prediction letters will show up in the outer tube of its wedge.
 Inner circle is deleate feature, which will delete the latest letter selected in our typing window.<br>
