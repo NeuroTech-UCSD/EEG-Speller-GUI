@@ -8,7 +8,10 @@ GUI consists of two circles that have three layers (tubes) and sliced in a quart
 Inner circle is deleate feature, which will delete the latest letter selected in our typing window.<br>
 ![Screen Shot 2021-10-09 at 11 13 48 AM](https://user-images.githubusercontent.com/74154666/136669741-7cb8cd48-d857-494f-9479-cf2fd3480344.png)
 <br>
-GUI starts from the upper right wedges and rotates every 5 seconds. Then rotation will continue between tubes after choosing a wedge. When a certain tube is selected, it will now rotate between the 5 letters. A letter selected will trigger a new update of its outer tube to 5 prediction and will start with rotating between 5 predicted letters. 
+* GUI starts from the upper right wedges and rotates every 5 seconds. 
+* Rotation will continue between tubes after choosing a wedge. 
+* When a certain tube is selected, it will now rotate between the 5 letters. 
+* A letter selected will trigger a new update of its outer tube to 5 prediction and will start with rotating between 5 predicted letters. 
 
 GUI Usage
 Right is to select and left goes back to last step.
