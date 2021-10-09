@@ -20,11 +20,15 @@ Characters selected are saved in a typing window next to GUI window.<br>
 ![ezgif com-gif-maker_1](https://user-images.githubusercontent.com/74154666/136670650-fa3f735b-c464-49ea-907b-90c69bea6d10.gif)<br>
 
 ## P300/SSVEP GUI
-This GUI consists of four 3x3 character matrices, totalling 36 characters. Each submatrix flashes at its own frequency, recognized by the SSVEP signal, while there is identical pattern of these flashing characters through each individual matrix, recognized by the P300 potential signal. 
+This GUI consists of four 3x3 character matrices, totaling 36 characters. Each submatrix flashes at its own frequency, recognized by the SSVEP signal, while there is identical pattern of these flashing characters through each individual matrix, recognized by the P300 potential signal. 
+<img width="917" alt="Screen Shot 2021-10-09 at 1 17 16 PM" src="https://user-images.githubusercontent.com/74033651/136673378-5f853c3b-7234-41dd-b59f-691dc6193706.png">
+<br>
 
 The GUI follows this pattern: 
 * The top left character begins flashing at its submatrix's respective frequency
 * After X ms, the next character begins to flash at the same frequency as the previous. There will be two characters flashing at once per submatrix.
 * This pattern until the end of the round
+![giphy](https://user-images.githubusercontent.com/74033651/136673358-63763421-9493-4cda-8b1a-d548345d5af6.gif)
+<br>
 
 The user's instruction is to locate their desired character on the supermatrix and notice when it begins to flash. It should then get selected once that round is over. 
