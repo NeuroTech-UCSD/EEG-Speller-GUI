@@ -27,9 +27,10 @@ This GUI consists of four 3x3 character matrices, totaling 36 characters. Each s
 The GUI follows this pattern: 
 * The top left character begins flashing at its submatrix's respective frequency.
 * After X ms, the next character begins to flash at the same frequency as the previous. There will be two characters flashing at once per submatrix.
-* This pattern continues until the end of the round.
-<br>
-![giphy](https://user-images.githubusercontent.com/74033651/136673358-63763421-9493-4cda-8b1a-d548345d5af6.gif)
+* This pattern continues until the end of the round. <br>
+
+![giphy](https://user-images.githubusercontent.com/74033651/136673422-3af96b30-8204-42db-b86b-e05a9b72ac05.gif)
+
 <br>
 
 The user's instruction is to locate their desired character on the supermatrix and notice when it begins to flash. It should then get selected once that round is over. 
