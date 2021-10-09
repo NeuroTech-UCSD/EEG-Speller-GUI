@@ -3,7 +3,7 @@ EEG speller help people that cannot use keyboard to type words using EEG headset
 
 ## Github Directories
 
-## GUI
+## MOTOR IMAGERY GUI
 GUI consists of two circles that have three layers (tubes) and sliced in a quarter (wedge). The middle tube have 5 letters in each wedge, 20 letters in the circle. The outer tube also consists of 5 letters in each wedge. It will be initialized blank for prediction letters. When a letter is selected, 5 following prediction letters will show up in the outer tube of its wedge.
 Inner circle is deleate feature, which will delete the latest letter selected in our typing window.<br>
 ![Screen Shot 2021-10-09 at 11 13 48 AM](https://user-images.githubusercontent.com/74154666/136669741-7cb8cd48-d857-494f-9479-cf2fd3480344.png)
@@ -18,3 +18,13 @@ Right is to select and left goes back to last step.
 
 Characters selected are saved in a typing window next to GUI window.<br>
 ![ezgif com-gif-maker_1](https://user-images.githubusercontent.com/74154666/136670650-fa3f735b-c464-49ea-907b-90c69bea6d10.gif)<br>
+
+## P300/SSVEP GUI
+This GUI consists of four 3x3 character matrices, totalling 36 characters. Each submatrix flashes at its own frequency, recognized by the SSVEP signal, while there is identical pattern of these flashing characters through each individual matrix, recognized by the P300 potential signal. 
+
+The GUI follows this pattern: 
+* The top left character begins flashing at its submatrix's respective frequency
+* After X ms, the next character begins to flash at the same frequency as the previous. There will be two characters flashing at once per submatrix.
+* This pattern until the end of the round
+
+The user's instruction is to locate their desired character on the supermatrix and notice when it begins to flash. It should then get selected once that round is over. 
