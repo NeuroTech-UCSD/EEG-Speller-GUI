@@ -120,6 +120,7 @@ def get_one_step_model():
 
 
 print("textgen initialization success")
+
 # ------------------------ Demo on how the model should be used --------------------------
 # states = None
 # next_char = [input("Pick a character: ")]

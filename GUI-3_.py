@@ -7,22 +7,17 @@
 ###############################################################################
 
 # Matplotlib + FuncAnimation
+# from textgen import get_one_step_model
 import warnings
-import math
-import random
-import pygame  # For sound play
 import os
-import pickle
 from tkinter import ttk
 import tkinter as tk
-import matplotlib.animation as animation
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-from matplotlib.figure import Figure
 import matplotlib
+from datetime import datetime
+import math
 
 # Text-generation
 import sys
-import tensorflow as tf
 
 textgen_path = os.path.join(os.getcwd(), "text generation")
 sys.path.append(textgen_path)
@@ -38,7 +33,7 @@ matplotlib.use("TkAgg")
 # Misc
 
 # Timing and timers
-# import time
+
 # from datetime import datetime # For creating timer from a counter
 
 # Suppress warnings
@@ -165,23 +160,24 @@ class StartPage(tk.Frame):
         self.curr_character = 0  # index of character string
 
         # Initialize the chars for each circle
-        self.BIG_CIRCLE_CHAR_L1 = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-                                   "K", "M", "N", "O", "P", "Q", "R", "S", "T", "U"]  # make predictions
+        self.BIG_CIRCLE_CHAR_L1 = [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ",
+                                   " ", " ", " ", " ", " ", " ", " ", " ", " ", " "]  # make predictions
 
-        self.MID_CIRCLE_CHAR_L1 = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-                                   "K", "M", "N", "O", "P", "Q", "R", "S", "T", "U"]
+        self.MID_CIRCLE_CHAR_L1 = ["E", "T", "A", "O", "I", "N", "S", "H", "R", "D",
+                                   "L", "C", "U", "M", "W", "F", "G", "Y", "P", "B"]
+        self.SMALL_CIRCLE_CHAR_L1 = ["det"]
 
-        self.SMALL_CIRCLE_CHAR_L1 = []
-        self.BIG_CIRCLE_CHAR_L2 = ["0", "1", "N", "O", "P", "Q", "R", "S", "T", "U",
-                                   "A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]  # make predictions
-        self.MID_CIRCLE_CHAR_L2 = ["0", "1", "N", "O", "P", "Q", "R", "S", "T", "U",
-                                   "A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
-        self.SMALL_CIRCLE_CHAR_L2 = []  # will be worked on in the future
+        self.BIG_CIRCLE_CHAR_L2 = [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ",
+                                   " ", " ", " ", " ", " ", " ", " ", " ", " ", " "]  # make predictions
+        self.MID_CIRCLE_CHAR_L2 = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+                                   "V", "K", "J", "X", "Q", "Z", "spc", ".", "'", "?"]
+        self.SMALL_CIRCLE_CHAR_L2 = ["det"]  # will be worked on in the future
 
         self.CHAR_OFFSET = 80
 
         # labels = [left circle label, mid, right]
-        self.LABELS = ["choose quarter", "choose section", "choose words"]
+        self.LABELS = ["Circle 1", "Circle 2",
+                       "choose section", "choose words"]
         self.LABEL_OFFSET = 50
 
         # Initialize coordinates of circles
@@ -215,13 +211,16 @@ class StartPage(tk.Frame):
         self.CHARS_LIST = [self.CHARS_LIST_L1, self.CHARS_LIST_L2]
         self.CIRCLES_LIST = [self.BIG_CIRCLE,
                              self.MID_CIRCLE, self.SMALL_CIRCLE]
-        self.RADIUS_LIST = [self.BIG_RADIUS, self.MID_RADIUS, self.SMALL_RADIUS]
+        self.RADIUS_LIST = [self.BIG_RADIUS,
+                            self.MID_RADIUS, self.SMALL_RADIUS]
 
         # initialize textgen model
         self.one_step_model = get_one_step_model()
         self.states = None
         self.next_char = []
         self.next_chars = []
+        self.second = 0
+        self.loop = 1
 
         left_button = ttk.Button(
             self, text="Left", command=lambda: self.send_command(self.LEFT_MI))
@@ -240,14 +239,12 @@ class StartPage(tk.Frame):
 
     def render(self):
         self.canvas.delete('all')
-
         if self.curr_layer == self.FIRST_LAYER:
             self.draw_first_layer()
         elif self.curr_layer == self.SECOND_LAYER:
             self.draw_second_layer()
         elif self.curr_layer == self.THIRD_LAYER:
             self.draw_third_layer()
-
         self.canvas.after(100, self.render)
 
     def draw_first_layer(self):
@@ -302,12 +299,15 @@ class StartPage(tk.Frame):
             for j in range(len(self.CHARS_LIST[self.curr_chart][i])):
                 char = self.CHARS_LIST[self.curr_chart][i][j]
                 self.draw_letter(
-                    char, (360 / len(self.CHARS_LIST[self.curr_chart][i])) * j - self.CHAR_OFFSET,
-                          self.RADIUS_LIST[i] - 50,
+                    char, (360 /
+                           len(self.CHARS_LIST[self.curr_chart][i])) * j - self.CHAR_OFFSET,
+                    self.RADIUS_LIST[i] - 50,
                     self.CIRCLES_LIST[i]["x"], self.CIRCLES_LIST[i]["y"])
         # Draw labels for circles
         self.canvas.create_text(self.CIRCLES_LIST[0]["x"], self.CIRCLES_LIST[0]["y"] - self.BIG_RADIUS -
-                                self.LABEL_OFFSET, text=self.LABELS[1], fill="black", font=("Verdana", 32))
+                                self.LABEL_OFFSET, text=self.LABELS[self.curr_chart], fill="black", font=("Verdana", 32))
+        # timer
+        # self.draw_time()
 
     def draw_second_layer(self):
         x = self.BIG_CIRCLE["x"]
@@ -374,12 +374,15 @@ class StartPage(tk.Frame):
             for j in range(len(self.CHARS_LIST[self.curr_chart][i])):
                 char = self.CHARS_LIST[self.curr_chart][i][j]
                 self.draw_letter(
-                    char, (360 / len(self.CHARS_LIST[self.curr_chart][i])) * j - self.CHAR_OFFSET,
-                          self.RADIUS_LIST[i] - 50,
+                    char, (360 /
+                           len(self.CHARS_LIST[self.curr_chart][i])) * j - self.CHAR_OFFSET,
+                    self.RADIUS_LIST[i] - 50,
                     self.CIRCLES_LIST[i]["x"], self.CIRCLES_LIST[i]["y"])
         # Draw labels for circles
         self.canvas.create_text(self.CIRCLES_LIST[0]["x"], self.CIRCLES_LIST[0]["y"] - self.BIG_RADIUS -
-                                self.LABEL_OFFSET, text=self.LABELS[1], fill="black", font=("Verdana", 32))
+                                self.LABEL_OFFSET, text=self.LABELS[2], fill="black", font=("Verdana", 32))
+        # timer
+        # self.draw_time()
 
     def draw_third_layer(self):
         x = self.BIG_CIRCLE["x"]
@@ -415,8 +418,9 @@ class StartPage(tk.Frame):
             for j in range(len(self.CHARS_LIST[self.curr_chart][i])):
                 char = self.CHARS_LIST[self.curr_chart][i][j]
                 self.draw_letter(
-                    char, (360 / len(self.CHARS_LIST[self.curr_chart][i])) * j - self.CHAR_OFFSET,
-                          self.RADIUS_LIST[i] - 50,
+                    char, (360 /
+                           len(self.CHARS_LIST[self.curr_chart][i])) * j - self.CHAR_OFFSET,
+                    self.RADIUS_LIST[i] - 50,
                     self.CIRCLES_LIST[i]["x"], self.CIRCLES_LIST[i]["y"])
 
         # Draw highlighted letters
@@ -424,173 +428,255 @@ class StartPage(tk.Frame):
             if self.curr_section == 1:
                 if k % 5 == 4:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 90 - 18 * 1)) * 200
-                        y_position = y + math.sin(math.radians(10 + 90 - 18 * 1)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 90 - 18 * 1)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 90 - 18 * 1)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 90 - 18 * 1)) * 100
-                        y_position = y + math.sin(math.radians(10 + 90 - 18 * 1)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 90 - 18 * 1)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 90 - 18 * 1)) * 100
                     current_color_letter = self.first_letter_color
                 elif k % 5 == 3:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 90 - 18 * 2)) * 200
-                        y_position = y + math.sin(math.radians(10 + 90 - 18 * 2)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 90 - 18 * 2)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 90 - 18 * 2)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 90 - 18 * 2)) * 100
-                        y_position = y + math.sin(math.radians(10 + 90 - 18 * 2)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 90 - 18 * 2)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 90 - 18 * 2)) * 100
                     current_color_letter = self.second_letter_color
                 elif k % 5 == 2:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 90 - 18 * 3)) * 200
-                        y_position = y + math.sin(math.radians(10 + 90 - 18 * 3)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 90 - 18 * 3)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 90 - 18 * 3)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 90 - 18 * 3)) * 100
-                        y_position = y + math.sin(math.radians(10 + 90 - 18 * 3)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 90 - 18 * 3)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 90 - 18 * 3)) * 100
                     current_color_letter = self.third_letter_color
                 elif k % 5 == 1:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 90 - 18 * 4)) * 200
-                        y_position = y + math.sin(math.radians(10 + 90 - 18 * 4)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 90 - 18 * 4)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 90 - 18 * 4)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 90 - 18 * 4)) * 100
-                        y_position = y + math.sin(math.radians(10 + 90 - 18 * 4)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 90 - 18 * 4)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 90 - 18 * 4)) * 100
                     current_color_letter = self.forth_letter_color
                 elif k % 5 == 0:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 90 - 18 * 5)) * 200
-                        y_position = y + math.sin(math.radians(10 + 90 - 18 * 5)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 90 - 18 * 5)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 90 - 18 * 5)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 90 - 18 * 5)) * 100
-                        y_position = y + math.sin(math.radians(10 + 90 - 18 * 5)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 90 - 18 * 5)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 90 - 18 * 5)) * 100
                     current_color_letter = self.fifth_letter_color
             elif self.curr_section == 0:
                 if k % 5 == 4:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 0 - 18 * 1)) * 200
-                        y_position = y + math.sin(math.radians(10 + 0 - 18 * 1)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 0 - 18 * 1)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 0 - 18 * 1)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 0 - 18 * 1)) * 100
-                        y_position = y + math.sin(math.radians(10 + 0 - 18 * 1)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 0 - 18 * 1)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 0 - 18 * 1)) * 100
                     current_color_letter = self.first_letter_color
                 elif k % 5 == 3:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 0 - 18 * 2)) * 200
-                        y_position = y + math.sin(math.radians(10 + 0 - 18 * 2)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 0 - 18 * 2)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 0 - 18 * 2)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 0 - 18 * 2)) * 100
-                        y_position = y + math.sin(math.radians(10 + 0 - 18 * 2)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 0 - 18 * 2)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 0 - 18 * 2)) * 100
                     current_color_letter = self.second_letter_color
                 elif k % 5 == 2:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 0 - 18 * 3)) * 200
-                        y_position = y + math.sin(math.radians(10 + 0 - 18 * 3)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 0 - 18 * 3)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 0 - 18 * 3)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 0 - 18 * 3)) * 100
-                        y_position = y + math.sin(math.radians(10 + 0 - 18 * 3)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 0 - 18 * 3)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 0 - 18 * 3)) * 100
                     current_color_letter = self.third_letter_color
                 elif k % 5 == 1:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 0 - 18 * 4)) * 200
-                        y_position = y + math.sin(math.radians(10 + 0 - 18 * 4)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 0 - 18 * 4)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 0 - 18 * 4)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 0 - 18 * 4)) * 100
-                        y_position = y + math.sin(math.radians(10 + 0 - 18 * 4)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 0 - 18 * 4)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 0 - 18 * 4)) * 100
                     current_color_letter = self.forth_letter_color
                 elif k % 5 == 0:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 0 - 18 * 5)) * 200
-                        y_position = y + math.sin(math.radians(10 + 0 - 18 * 5)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 0 - 18 * 5)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 0 - 18 * 5)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 0 - 18 * 5)) * 100
-                        y_position = y + math.sin(math.radians(10 + 0 - 18 * 5)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 0 - 18 * 5)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 0 - 18 * 5)) * 100
                     current_color_letter = self.fifth_letter_color
             elif self.curr_section == 3:
                 if k % 5 == 4:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 270 - 18 * 1)) * 200
-                        y_position = y + math.sin(math.radians(10 + 270 - 18 * 1)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 270 - 18 * 1)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 270 - 18 * 1)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 270 - 18 * 1)) * 100
-                        y_position = y + math.sin(math.radians(10 + 270 - 18 * 1)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 270 - 18 * 1)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 270 - 18 * 1)) * 100
                     current_color_letter = self.first_letter_color
                 elif k % 5 == 3:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 270 - 18 * 2)) * 200
-                        y_position = y + math.sin(math.radians(10 + 270 - 18 * 2)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 270 - 18 * 2)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 270 - 18 * 2)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 270 - 18 * 2)) * 100
-                        y_position = y + math.sin(math.radians(10 + 270 - 18 * 2)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 270 - 18 * 2)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 270 - 18 * 2)) * 100
                     current_color_letter = self.second_letter_color
                 elif k % 5 == 2:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 270 - 18 * 3)) * 200
-                        y_position = y + math.sin(math.radians(10 + 270 - 18 * 3)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 270 - 18 * 3)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 270 - 18 * 3)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 270 - 18 * 3)) * 100
-                        y_position = y + math.sin(math.radians(10 + 270 - 18 * 3)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 270 - 18 * 3)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 270 - 18 * 3)) * 100
                     current_color_letter = self.third_letter_color
                 elif k % 5 == 1:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 270 - 18 * 4)) * 200
-                        y_position = y + math.sin(math.radians(10 + 270 - 18 * 4)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 270 - 18 * 4)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 270 - 18 * 4)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 270 - 18 * 4)) * 100
-                        y_position = y + math.sin(math.radians(10 + 270 - 18 * 4)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 270 - 18 * 4)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 270 - 18 * 4)) * 100
                     current_color_letter = self.forth_letter_color
                 elif k % 5 == 0:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 270 - 18 * 5)) * 200
-                        y_position = y + math.sin(math.radians(10 + 270 - 18 * 5)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 270 - 18 * 5)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 270 - 18 * 5)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 270 - 18 * 5)) * 100
-                        y_position = y + math.sin(math.radians(10 + 270 - 18 * 5)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 270 - 18 * 5)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 270 - 18 * 5)) * 100
                     current_color_letter = self.fifth_letter_color
             elif self.curr_section == 2:
                 if k % 5 == 4:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 180 - 18 * 1)) * 200
-                        y_position = y + math.sin(math.radians(10 + 180 - 18 * 1)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 180 - 18 * 1)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 180 - 18 * 1)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 180 - 18 * 1)) * 100
-                        y_position = y + math.sin(math.radians(10 + 180 - 18 * 1)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 180 - 18 * 1)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 180 - 18 * 1)) * 100
                     current_color_letter = self.first_letter_color
                 elif k % 5 == 3:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 180 - 18 * 2)) * 200
-                        y_position = y + math.sin(math.radians(10 + 180 - 18 * 2)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 180 - 18 * 2)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 180 - 18 * 2)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 180 - 18 * 2)) * 100
-                        y_position = y + math.sin(math.radians(10 + 180 - 18 * 2)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 180 - 18 * 2)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 180 - 18 * 2)) * 100
                     current_color_letter = self.second_letter_color
                 elif k % 5 == 2:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 180 - 18 * 3)) * 200
-                        y_position = y + math.sin(math.radians(10 + 180 - 18 * 3)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 180 - 18 * 3)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 180 - 18 * 3)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 180 - 18 * 3)) * 100
-                        y_position = y + math.sin(math.radians(10 + 180 - 18 * 3)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 180 - 18 * 3)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 180 - 18 * 3)) * 100
                     current_color_letter = self.third_letter_color
                 elif k % 5 == 1:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 180 - 18 * 4)) * 200
-                        y_position = y + math.sin(math.radians(10 + 180 - 18 * 4)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 180 - 18 * 4)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 180 - 18 * 4)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 180 - 18 * 4)) * 100
-                        y_position = y + math.sin(math.radians(10 + 180 - 18 * 4)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 180 - 18 * 4)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 180 - 18 * 4)) * 100
                     current_color_letter = self.forth_letter_color
                 elif k % 5 == 0:
                     if self.curr_arc == 0:
-                        x_position = x + math.cos(math.radians(10 + 180 - 18 * 5)) * 200
-                        y_position = y + math.sin(math.radians(10 + 180 - 18 * 5)) * 200
+                        x_position = x + \
+                            math.cos(math.radians(10 + 180 - 18 * 5)) * 200
+                        y_position = y + \
+                            math.sin(math.radians(10 + 180 - 18 * 5)) * 200
                     elif self.curr_arc == 1:
-                        x_position = x + math.cos(math.radians(10 + 180 - 18 * 5)) * 100
-                        y_position = y + math.sin(math.radians(10 + 180 - 18 * 5)) * 100
+                        x_position = x + \
+                            math.cos(math.radians(10 + 180 - 18 * 5)) * 100
+                        y_position = y + \
+                            math.sin(math.radians(10 + 180 - 18 * 5)) * 100
                     current_color_letter = self.fifth_letter_color
 
             self.canvas.create_text(x_position, y_position, text=chosen_char_list[k],
                                     font=("Verdana", 25), fill=current_color_letter)
         # Draw labels for circles
         self.canvas.create_text(self.CIRCLES_LIST[0]["x"], self.CIRCLES_LIST[0]["y"] - self.BIG_RADIUS -
-                                self.LABEL_OFFSET, text=self.LABELS[2], fill="black", font=("Verdana", 32))
+                                self.LABEL_OFFSET, text=self.LABELS[3], fill="black", font=("Verdana", 32))
+        # timer
+        # self.draw_time()
 
     def draw_letter(self, character, angle, radius, center_x, center_y):
         x = math.cos(math.radians(angle)) * radius + center_x
@@ -603,14 +689,14 @@ class StartPage(tk.Frame):
         # arr: quadrant arr to be change
         if self.curr_chart == 0:
             self.BIG_CIRCLE_CHAR_L1[
-            self.curr_section * self.NUM_CHAR: (self.curr_section + 1) * self.NUM_CHAR] = self.next_chars
+                self.curr_section * self.NUM_CHAR: (self.curr_section + 1) * self.NUM_CHAR] = self.next_chars
             # if self.curr_section == 0:
             #     self.BIG_CIRCLE_CHAR_L1[0:self.NUM_CHAR] = self.next_chars
             # elif self.curr_section == 1:
             #     self.BIG_CIRCLE_CHAR_L1[self.NUM_CHAR:]
         elif self.curr_chart == 1:
             self.BIG_CIRCLE_CHAR_L2[
-            self.curr_section * self.NUM_CHAR: (self.curr_section + 1) * self.NUM_CHAR] = self.next_chars
+                self.curr_section * self.NUM_CHAR: (self.curr_section + 1) * self.NUM_CHAR] = self.next_chars
 
     # Update loop
     def update(self):
@@ -618,15 +704,34 @@ class StartPage(tk.Frame):
             self.time += 50
             cycleTime = 4000
             timeInterval = int(cycleTime / self.NUM_CIRCLE_SECTIONS)
+
             self.time = self.time % cycleTime
             if self.time >= 0 and self.time < timeInterval:
                 self.curr_section = 0
+                if self.loop == 1:
+                    self.second = 1
+                elif self.loop == 2:
+                    self.second = 5
             elif self.time >= timeInterval and self.time < timeInterval * 2:
                 self.curr_section = 1
+                if self.loop == 1:
+                    self.second = 2
+                elif self.loop == 2:
+                    self.second = 4
             elif self.time >= timeInterval * 2 and self.time < timeInterval * 3:
                 self.curr_section = 2
+                if self.loop == 1:
+                    self.second = 3
+                elif self.loop == 2:
+                    self.second = 3
             else:
                 self.curr_section = 3
+                if self.loop == 1:
+                    self.second = 4
+                    self.loop = 2
+                elif self.loop == 2:
+                    self.second = 2
+                    self.loop = 1
 
             self.topright_arc_color = self.HIGHLIGHTED_COLOR if self.curr_section == 0 else self.DEFAULT_COLOR
             self.botright_arc_color = self.HIGHLIGHTED_COLOR if self.curr_section == 1 else self.DEFAULT_COLOR
@@ -636,6 +741,7 @@ class StartPage(tk.Frame):
             self.time += 50
             cycleTime = 4000
             timeInterval = int(cycleTime / self.NUM_ARC_SECTIONS)
+            timeTimer = int(1000)
             self.time = self.time % cycleTime
             if self.time >= 0 and self.time < timeInterval:
                 self.curr_arc = 0
@@ -644,6 +750,27 @@ class StartPage(tk.Frame):
             else:
                 self.curr_arc = 2
 
+            if self.time >= 0 and self.time < timeTimer:
+                if self.loop == 1:
+                    self.second = 1
+                elif self.loop == 2:
+                    self.second = 5
+            elif self.time >= timeTimer and self.time < timeTimer*2:
+                if self.loop == 1:
+                    self.second = 2
+                elif self.loop == 2:
+                    self.second = 4
+            elif self.time >= timeTimer*2 and self.time < timeTimer*3:
+                if self.loop == 1:
+                    self.second = 3
+                elif self.loop == 2:
+                    self.second = 3
+            elif self.time >= timeTimer*3 and self.time < timeTimer*4:
+                if self.loop == 1:
+                    self.second = 4
+                elif self.loop == 2:
+                    self.second = 2
+
             self.big_arc_color = self.HIGHLIGHTED_COLOR if self.curr_arc == 0 else self.DEFAULT_COLOR
             self.mid_arc_color = self.HIGHLIGHTED_COLOR if self.curr_arc == 1 else self.DEFAULT_COLOR
             self.small_arc_color = self.HIGHLIGHTED_COLOR if self.curr_arc == 2 else self.DEFAULT_COLOR
@@ -651,6 +778,36 @@ class StartPage(tk.Frame):
             self.time2 += 50
             cycleTime2 = 4000
             timeInterval2 = int(cycleTime2 / 5)
+            self.loop = 1
+
+            self.time = self.time % cycleTime2
+            if self.time >= 0 and self.time < timeInterval2:
+                self.curr_letter = 0
+                if self.loop == 1:
+                    self.second = 1
+                elif self.loop == 2:
+                    self.second = 5
+            elif self.time >= timeInterval2 and self.time < timeInterval2 * 2:
+                self.curr_letter = 1
+                if self.loop == 1:
+                    self.second = 2
+                elif self.loop == 2:
+                    self.second = 4
+            elif self.time >= timeInterval2 * 2 and self.time < timeInterval2 * 3:
+                self.curr_letter = 2
+                if self.loop == 1:
+                    self.second = 3
+                elif self.loop == 2:
+                    self.second = 3
+            else:
+                self.curr_letter = 3
+                if self.loop == 1:
+                    self.second = 4
+                    self.loop = 2
+                elif self.loop == 2:
+                    self.second = 2
+                    self.loop = 1
+
             self.time2 = self.time2 % cycleTime2
             if self.time2 >= 0 and self.time2 < timeInterval2:
                 self.curr_letter = 4
@@ -675,8 +832,18 @@ class StartPage(tk.Frame):
         if self.curr_layer == self.SECOND_LAYER:
             # Update the current circle
             if command == self.RIGHT_MI:
-                self.curr_layer = self.THIRD_LAYER
-                self.time = 0
+                # delete the last character
+                print("current arc: " + str(self.curr_arc))
+                if self.curr_arc == 2:
+                    del TEXT[-1]
+                    # go back to previous line
+                    if TEXT[-1] == '\n':
+                        del TEXT[-1]
+                    self.curr_layer = self.SECOND_LAYER
+                    self.time2 = 0
+                else:
+                    self.curr_layer = self.THIRD_LAYER
+                    self.time = 0
             elif command == self.LEFT_MI:
                 self.curr_layer = self.FIRST_LAYER
                 self.time2 = 0
@@ -686,6 +853,7 @@ class StartPage(tk.Frame):
         elif self.curr_layer == self.FIRST_LAYER:
             if command == self.RIGHT_MI:
                 self.curr_layer = self.SECOND_LAYER
+                self.curr_arc = 1
                 self.time = 0
             elif command == self.LEFT_MI:
                 if self.curr_chart == 0:
@@ -704,6 +872,9 @@ class StartPage(tk.Frame):
                 self.time2 = 0
             elif command == self.RIGHT_MI:
                 # save characters
+                if self.curr_arc == 2:
+                    self.curr_layer = self.SECOND_LAYER
+                    self.time2 = 0
                 text_to_append = self.CHARS_LIST[self.curr_chart][self.curr_arc][
                     (self.curr_section + 1) * 5 - self.curr_letter - 1]
                 # TODO : FIX THIS FROM MAKING TUPLE
@@ -730,7 +901,11 @@ class StartPage(tk.Frame):
                 self.next_char = [TEXT[-1]]
                 print("char selected:", self.next_char)
                 self.next_chars, self.states = self.one_step_model.generate_one_step(self.next_char, states=self.states)
+                #[x.decode('utf-8') for x in self.next_chars.numpy()]
+                #self.next_chars = []
                 self.next_chars = [x.decode('utf-8') for x in self.next_chars.numpy()]
+                #[s.replace(' ', self.SPACE) for s in self.next_chars]
+                #self.next_chars = []
                 self.next_chars = [s.replace(' ', self.SPACE) for s in self.next_chars]
                 print("predicted chars:", self.next_chars)
                 self.update_quadrant_textgen()
@@ -739,7 +914,6 @@ class StartPage(tk.Frame):
 
 
 class TextPage(tk.Frame):
-
     def __init__(self, parent, controller, session=None):
         tk.Frame.__init__(self, parent)
         self.label = tk.Label(self, text="CircleSpell", font=BOLD_FONT)
@@ -752,11 +926,25 @@ class TextPage(tk.Frame):
         self.canvas = tk.Canvas(self)
         self.canvas.pack(fill=tk.BOTH, expand=1)
 
+        self.start_time = datetime.today().timestamp()
+
     # get text
     def draw_text(self):
-
         strText = ''.join(TEXT)
-        self.canvas.create_text(200, 400, text=strText, fill="black", font=("Verdana", 32))
+        self.canvas.create_text(200, 400, text=strText,
+                                fill="black", font=("Verdana", 32))
+
+    def draw_time(self):
+        num_seconds_to_display = 5
+        curr_time = datetime.today().timestamp()
+
+        # Draw labels for circles
+        second = str(math.floor((curr_time - self.start_time) %
+                     num_seconds_to_display) + 1)
+        self.canvas.create_text(100, 20, text="Time: ",
+                                fill="black", font=("Verdana", 20))
+        self.canvas.create_text(
+            200, 20, text=second, fill="black", font=("Verdana", 20))
 
     def show(self):
         # Begin the update loop
@@ -766,6 +954,7 @@ class TextPage(tk.Frame):
     def render(self):
         self.canvas.delete('all')
         self.draw_text()
+        self.draw_time()
         self.canvas.after(100, self.render)
 
 
