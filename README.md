@@ -2,14 +2,14 @@
 EEG Speller is an application desgined to give users the ability to spell words without a physical keyboard. Brain signals are read from an EEG headset and are then decoded using machine-learning to classify the particular character the user wants to select. This application specifically focuses on motor-imagery based speller and aims to deliver a novel graphical-user interface that would improve the performance and speed of character selection.
 
 ## MOTOR IMAGERY GUI
-The GUI consists of an inner and outer circle that has three layers. Each layer is spliced into 4 parts or subsections. The inner layers have 5 letters in each subsection resulting in a total of 20 letters in the inner layer. The outer layer also consists of 5 letters in each subsection. The purpose of the outer layer is to provide the users easier access to characters that they will most likely select. These characters are generated based on our text-generation NLP model.
+The GUI consists of an inner and outer circle that has three layers. Each layer is spliced into 4 parts or subsections (tubes). The inner layers have 5 letters in each subsection resulting in a total of 20 letters in the inner layer. The outer layer also consists of 5 letters in each subsection. The purpose of the outer layer is to provide the users easier access to characters that they will most likely select. These characters are generated based on our text-generation NLP model.
+<img width="519" alt="Screen Shot 2021-10-10 at 1 17 28 PM" src="https://user-images.githubusercontent.com/45252772/136711826-1f7b6ee9-eb60-4ba5-8760-f06b840c8c1d.png">
 
-<img width="550" alt="Screen Shot 2021-10-10 at 1 03 49 PM" src="https://user-images.githubusercontent.com/45252772/136711473-d846295c-941c-41a1-a27f-aa0f8db2026b.png">
 
 ### The Process: 
 1. GUI Starts from the upper right subsection and rotates every 5 seconds
 2. Rotation will continue between the subsections until the user chooses a particular subsection through a right-imagined movement (motor-imagery task)
-3. When the subsection is selected, the GUI will now focus on the characters in each subsection and rotate through the characters one by one
+3. When the subsection is selected, the GUI will now focus on the characters along the wedge and rotate through the characters one by one
 4. The user will then pick the character through a right imagined movement (motor-imagery task)
 5. After the user has picked a character, 5 characters will appear in the outer layer of the same subsection. These 5 characters are the most likely characters to be selected based on our NLP model. The user can then easily move to the outer layer in one step as opposed to using multiple steps to pick a character in the inner layer. 
 6. Note that a left-imagined movement is dedicated to reverting a decision
