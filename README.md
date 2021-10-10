@@ -1,18 +1,18 @@
 # EEG-Speller
-EEG speller help people that cannot use keyboard to type words using EEG headsets.
+EEG Speller is an application desgined to give users the ability to spell words without a physical keyboard. Brain signals are read from an EEG headset and are then decoded using machine-learning to classify the particular character the user wants to select. This application specifically focuses on motor-imagery based speller and aims to deliver a novel graphical-user interface that would improve the performance and speed of character selection.
 
 ## MOTOR IMAGERY GUI
-GUI consists of two circles that have three layers (tubes) and sliced in a quarter (wedge). The middle tube have 5 letters in each wedge, 20 letters in the circle. The outer tube also consists of 5 letters in each wedge. It will be initialized blank for prediction letters. When a letter is selected, 5 following prediction letters will show up in the outer tube of its wedge.
-Inner circle is deleate feature, which will delete the latest letter selected in our typing window.<br>
-![Screen Shot 2021-10-09 at 11 13 48 AM](https://user-images.githubusercontent.com/74154666/136669741-7cb8cd48-d857-494f-9479-cf2fd3480344.png)
-<br>
-* GUI starts from the upper right wedges and rotates every 5 seconds. 
-* Rotation will continue between tubes after choosing a wedge. 
-* When a certain tube is selected, it will now rotate between the 5 letters. 
-* A letter selected will trigger a new update of its outer tube to 5 prediction and will start with rotating between 5 predicted letters. 
+The GUI consists of an inner and outer circle that has three layers. Each layer is spliced into 4 parts or subsections. The inner layers have 5 letters in each subsection resulting in a total of 20 letters in the inner layer. The outer layer also consists of 5 letters in each subsection. The purpose of the outer layer is to provide the users easier access to characters that they will most likely select. These characters are generated based on our text-generation NLP model.
 
-GUI Usage
-Right is to select and left goes back to last step.
+<img width="550" alt="Screen Shot 2021-10-10 at 1 03 49 PM" src="https://user-images.githubusercontent.com/45252772/136711473-d846295c-941c-41a1-a27f-aa0f8db2026b.png">
+
+### The Process: 
+1. GUI Starts from the upper right subsection and rotates every 5 seconds
+2. Rotation will continue between the subsections until the user chooses a particular subsection through a right-imagined movement (motor-imagery task)
+3. When the subsection is selected, the GUI will now focus on the characters in each subsection and rotate through the characters one by one
+4. The user will then pick the character through a right imagined movement (motor-imagery task)
+5. After the user has picked a character, 5 characters will appear in the outer layer of the same subsection. These 5 characters are the most likely characters to be selected based on our NLP model. The user can then easily move to the outer layer in one step as opposed to using multiple steps to pick a character in the inner layer. 
+6. Note that a left-imagined movement is dedicated to reverting a decision
 
 Characters selected are saved in a typing window next to GUI window.<br>
 ![ezgif com-gif-maker_1](https://user-images.githubusercontent.com/74154666/136670650-fa3f735b-c464-49ea-907b-90c69bea6d10.gif)<br>
