@@ -34,3 +34,6 @@ The GUI follows this pattern:
 <br>
 
 The user's instruction is to locate their desired character on the supermatrix and notice when it begins to flash. It should then get selected once that round is over. 
+
+## Contributors
+Chao-Li Wei, Eugene Kim, Andrew Clinton Wong, Quinton Ramaswamy, Joelle Faybishenko, Simon Fei, Bailey Man
