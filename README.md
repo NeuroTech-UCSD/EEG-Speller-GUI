@@ -3,6 +3,7 @@ EEG Speller is an application desgined to give users the ability to spell words 
 
 ## MOTOR IMAGERY GUI
 The GUI consists of an inner and outer circle that has three layers. Each layer is spliced into 4 parts or subsections (tubes). The inner layers have 5 letters in each subsection resulting in a total of 20 letters in the inner layer. The outer layer also consists of 5 letters in each subsection. The purpose of the outer layer is to provide the users easier access to characters that they will most likely select. These characters are generated based on our text-generation NLP model.
+
 <img width="519" alt="Screen Shot 2021-10-10 at 1 17 28 PM" src="https://user-images.githubusercontent.com/45252772/136711826-1f7b6ee9-eb60-4ba5-8760-f06b840c8c1d.png">
 
 
